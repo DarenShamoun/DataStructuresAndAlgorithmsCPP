@@ -10,8 +10,9 @@
 int main(int argc, char* argv[])
 {
 	std::cout << "Welcome to the Big Number Calculator!\n";
-	std::cout << "this calculator operates in postfix notation ex: 5 5 5 * * = 125 \n";
-    std::cout << "Enter 'quit' to exit the program at any time.\n";
+    std::cout << "This calculator takes input in postfix notation\n\n";
+    std::cout << "ex: 5 5 5 * * = 125 \n\n";
+    std::cout << "Enter 'quit' to exit the program at any time.\n\n";
     
     //get user options from the command line
 	auto playerOptions = mesa::get_options(argc, argv);
@@ -34,7 +35,7 @@ int main(int argc, char* argv[])
 			playerOptions.again = false;
             break;
         }
-        else if (line.empty() || line[0] == '#')
+        if (line.empty() || line[0] == '#')
         {
             continue;
         }

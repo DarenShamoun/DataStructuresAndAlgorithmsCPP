@@ -33,9 +33,9 @@ public:
         int carry = 0;
         for (int i = 0; i < operands[0].size() || i < operands[1].size(); i++)
         {
-            int digit1 = i < operands[0].size() ? operands[0][i] : 0;
-            int digit2 = i < operands[1].size() ? operands[1][i] : 0;
-            int sum = digit1 + digit2 + carry;
+            const int digit1 = i < operands[0].size() ? operands[0][i] : 0;
+            const int digit2 = i < operands[1].size() ? operands[1][i] : 0;
+            const int sum = digit1 + digit2 + carry;
             result.push_back(sum % 10);
             carry = sum / 10;
         }
@@ -81,8 +81,8 @@ public:
             int borrow = 0;
             for (int i = 0; i < subtrahend.size(); i++)
             {
-                int a = i < minuend.size() ? minuend[i] : 0;
-                int b = i < subtrahend.size() ? subtrahend[i] : 0;
+                const int a = i < minuend.size() ? minuend[i] : 0;
+                const int b = i < subtrahend.size() ? subtrahend[i] : 0;
                 int diff = b - a - borrow;
                 if (diff < 0)
                 {
@@ -106,8 +106,8 @@ public:
         int borrow = 0;
         for (int i = 0; i < minuend.size(); i++)
         {
-            int a = i < minuend.size() ? minuend[i] : 0;
-            int b = i < subtrahend.size() ? subtrahend[i] : 0;
+            const int a = i < minuend.size() ? minuend[i] : 0;
+            const int b = i < subtrahend.size() ? subtrahend[i] : 0;
             int diff = a - b - borrow;
             if (diff < 0)
             {
@@ -167,8 +167,8 @@ public:
             int carry = 0;
             for (int j = 0; j < multiplier.size() || carry > 0; j++)
             {
-                int digit = j < multiplier.size() ? multiplier[j] : 0;
-                int sum = product[i + j] + multiplicand[i] * digit + carry;
+                const int digit = j < multiplier.size() ? multiplier[j] : 0;
+                const int sum = product[i + j] + multiplicand[i] * digit + carry;
                 product[i + j] = sum % 10;
                 carry = sum / 10;
             }
@@ -227,8 +227,8 @@ public:
                 int borrow = 0;
                 for (int i = 0; i < remainder.size(); i++)
                 {
-                    int a = i < remainder.size() ? remainder[i] : 0;
-                    int b = i < divisor.size() ? divisor[i] : 0;
+                    const int a = i < remainder.size() ? remainder[i] : 0;
+                    const int b = i < divisor.size() ? divisor[i] : 0;
                     int diff = a - b - borrow;
                     if (diff < 0)
                     {
@@ -272,13 +272,13 @@ public:
     std::vector<int> handle(const std::vector<std::vector<int>>& operands) const override
     {
         // Make sure there is exactly one operand and the exponent is a positive integer
-        if (operands.size() != 1 || operands[0].size() != 1 || operands[0][0] <= 0)
+        if (operands.size() != 1 || !std::all_of(operands[0].begin(), operands[0].end(), [](int digit) { return digit >= 0; }) || operands[0][0] <= 0)
         {
             throw std::invalid_argument("Exponent requires exactly one operand and a positive integer exponent");
         }
 
         const std::vector<int>& base = operands[0];
-        int exponent = operands[0][0];
+        const int exponent = operands[0][0];
 
         // Perform exponentiation by repeated multiplication
         std::vector<int> result = { 1 };
@@ -342,7 +342,7 @@ private:
     }
 
     // Helper function to create a deep copy of an `Operation` object
-    std::unique_ptr<Operation> CloneOperation(const std::unique_ptr<Operation>& operation)
+    std::unique_ptr<Operation> static CloneOperation(const std::unique_ptr<Operation>& operation)
     {
         return std::unique_ptr<Operation>(operation->Clone());
     }
@@ -361,7 +361,7 @@ public:
         operations_[symbol] = std::move(operation);
     }
     
-    std::unique_ptr<Operation> CreateOperation(const std::string& token)
+    std::unique_ptr<Operation> static CreateOperation(const std::string& token)
     {
         static const std::unordered_map<std::string, std::function<std::unique_ptr<Operation>()>> factory = 
         {
@@ -383,9 +383,9 @@ public:
     std::vector<int> static ParseBigNumber(const std::string& number)
     {
         std::vector<int> bigNumber;
-        for (char ch : number)
+        for (const char ch : number)
         {
-            if (!isdigit(ch))
+            if (!bool(isdigit(ch)))
             {
                 throw std::invalid_argument("Invalid number");
             }
@@ -410,7 +410,7 @@ public:
                 auto operation = CreateOperation(token);
 
                 // Pop the required number of operands from the operands stack
-                size_t operandCount = operation->GetOperandCount();
+                const size_t operandCount = operation->GetOperandCount();
                 std::vector<std::vector<int>> operationOperands;
                 operationOperands.reserve(operandCount);
                 for (size_t i = 0; i < operandCount; i++)
@@ -421,7 +421,7 @@ public:
                 std::reverse(operationOperands.begin(), operationOperands.end());
 
                 // Perform the operation and push the result onto the operands stack
-                std::vector<int> result = operation->handle(operationOperands);
+                const std::vector<int> result = operation->handle(operationOperands);
                 operands.push_back(result);
 
                 // Push the operation onto the operations stack
@@ -447,7 +447,7 @@ public:
         return std::all_of(token.begin(), token.end(), ::isdigit);
     }
     
-    std::vector<int> ToBigNumber(const std::string& number)
+    std::vector<int> static ToBigNumber(const std::string& number)
     {
         std::vector<int> big_number;
         for (const char& digit : number)
@@ -460,7 +460,7 @@ public:
     std::string ToString() const
     {
         std::stringstream ss;
-        for (int i = m_result.size() - 1; i >= 0; i--)
+        for (auto i = m_result.size() - 1; i >= 0; i--)
         {
             ss << m_result[i];
         }
@@ -474,14 +474,14 @@ public:
         {
             if (IsOperator(token))
             {
-                int operand_count = GetOperandCount(token);
+                auto operand_count = GetOperandCount(token);
                 std::vector<std::vector<int>> operands;
                 while (operand_count-- > 0)
                 {
                     operands.push_back(operand_stack.top());
                     operand_stack.pop();
                 }
-                std::vector<int> result = GetOperation(token)->handle(operands);
+                const std::vector<int> result = GetOperation(token)->handle(operands);
                 operand_stack.push(result);
             }
             else
