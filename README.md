@@ -1,5 +1,3 @@
-# CISC187 assignments
-Welcome to CISC 187!
+Welcome to my C++ labs and projects folder which contains all the labs I completed in my Data structures and algorithms course!
 
-All labs and projects are completed within this repository.
-
+These labs require cmake and clang tidy to be built as intended, however the code itself works without these programs.
