@@ -1,0 +1,85 @@
+insert 0 DNA gaagat
+  print   0
+insert 5 dna acgt
+PRINT
+Insert 3   DNA  cup
+
+  print 0
+remove 0
+  print 0
+
+insert 1  DNA accga
+
+copy 1 2
+transcribe 2
+print
+
+  copy   5 4
+transcribe 4
+  print 5
+  print 4
+
+insert 1 RNA aaaaccccgggguuuu
+clip  1 2 4
+  print 1
+clip 1 1
+print 1
+
+
+Insert 4 RNA aaaccc
+Insert 5 RNA ggguuu
+Print 4
+Print 5
+Swap 4 3 5 3
+Print
+
+insert 1 RNA      aaccaa
+      clip 1 4 1
+print 1
+print 4
+
+Clip 4 3
+print
+
+insert 1 RNA aaaacccc
+insert 3 DNA ggggtttt
+print 1
+print 3
+swap 1 2 3 5
+print 1
+print 3
+
+insert 6 DNA aactgccagtaagggataaaggcactaaaagaactcgagcagcgcggagt
+print 6
+              
+Transcribe 6
+print 6
+ 
+transcribe 6
+print 6
+ 
+print 4
+clip 4 6
+print 4
+
+insert 7 dna attacgatctgcacaagatcct
+transcribe 7
+print 7
+copy 0 7
+swap 0 7 1 1 
+
+insert 1 RNA auuuccccgggguuuu
+clip  1 2 4
+  print 1
+clip 1 1
+print 1
+print
+
+insert 6 RNA gggguuuu
+insert 7 DNA aaaacccc
+print 6
+print 7
+swap 6 4 7 4
+print 6
+print 7
+print

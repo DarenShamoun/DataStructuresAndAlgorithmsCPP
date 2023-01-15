@@ -1,0 +1,5 @@
+insert 0 DNA gaagat
+  print   0
+insert 5 dna acgt
+PRINT
+Insert 3   DNA  cup
