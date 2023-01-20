@@ -1,8 +1,6 @@
 //Daren Shamoun
 //ID# 5550016094
 #include "options.h"
-#include <iostream>
-#include <algorithm>
 
 namespace mesa
 {

@@ -1,13 +1,21 @@
 //Daren Shamoun
-//ID# 5550016094
-#include "big_number_calculator.h"
+#ifndef SUBTRACTION_H
+#define SUBTRACTION_H
+
 #include "operation.h"
+
+#include <algorithm>
+#include <vector>
+#include <memory>
+#include <exception>
+#include <stdexcept>
+
 
 //define subtraction operation
 class Subtraction : public Operation
 {
 public:
-    std::vector<int> handle(const std::vector<int>& operands) const override
+    BigNumber handle(const std::vector<BigNumber>& operands) const override
     {
         // Make sure there are exactly two operands
         if (operands.size() != 2)
@@ -15,20 +23,20 @@ public:
             throw std::invalid_argument("Subtraction requires exactly two operands");
         }
 
-        const std::vector<int>& minuend = operands[0];
-        const std::vector<int>& subtrahend = operands[1];
+        const BigNumber& minuend = operands[0];
+        const BigNumber& subtrahend = operands[1];
 
         // Check if the minuend is smaller than the subtrahend
-        if (minuend.size() < subtrahend.size() ||
-            (minuend.size() == subtrahend.size() && std::lexicographical_compare(minuend.rbegin(), minuend.rend(), subtrahend.rbegin(), subtrahend.rend())))
+        if (minuend.digits.size() < subtrahend.digits.size() ||
+            (minuend.digits.size() == subtrahend.digits.size() && std::lexicographical_compare(minuend.digits.rbegin(), minuend.digits.rend(), subtrahend.digits.rbegin(), subtrahend.digits.rend())))
         {
             // If the minuend is smaller than the subtrahend, swap the operands and negate the result
             std::vector<int> difference;
             int borrow = 0;
-            for (int i = 0; i < subtrahend.size(); i++)
+            for (int i = 0; i < subtrahend.digits.size(); i++)
             {
-                const int a = i < minuend.size() ? minuend[i] : 0;
-                const int b = i < subtrahend.size() ? subtrahend[i] : 0;
+                const int a = i < minuend.digits.size() ? minuend.digits[i] : 0;
+                const int b = i < subtrahend.digits.size() ? subtrahend.digits[i] : 0;
                 int diff = b - a - borrow;
                 if (diff < 0)
                 {
@@ -50,10 +58,10 @@ public:
         // If the minuend is not smaller than the subtrahend, subtract the subtrahend from the minuend
         std::vector<int> difference;
         int borrow = 0;
-        for (int i = 0; i < minuend.size(); i++)
+        for (size_t i = 0; i < minuend.digits.size(); i++)
         {
-            const int a = i < minuend.size() ? minuend[i] : 0;
-            const int b = i < subtrahend.size() ? subtrahend[i] : 0;
+            const int a = i < minuend.digits.size() ? minuend.digits[i] : 0;
+            const int b = i < subtrahend.digits.size() ? subtrahend.digits[i] : 0;
             int diff = a - b - borrow;
             if (diff < 0)
             {
@@ -81,3 +89,5 @@ public:
         return std::make_unique<Subtraction>(*this);
     }
 };
+
+#endif // !SUBTRACTION_H

@@ -1,13 +1,20 @@
 //Daren Shamoun
-//ID# 5550016094
-#include "big_number_calculator.h"
+#ifndef MULTIPLICATION_H
+#define MULTIPLICATION_H
+
 #include "operation.h"
+
+#include <algorithm>
+#include <vector>
+#include <memory>
+#include <stdexcept>
+
 
 //define multiplication operation
 class Multiplication : public Operation
 {
 public:
-    std::vector<int> handle(const std::vector<int>& operands) const override
+    BigNumber handle(const std::vector<BigNumber>& operands) const override
     {
         // Make sure there are exactly two operands
         if (operands.size() != 2)
@@ -16,26 +23,26 @@ public:
         }
 
         // Check if one of the operands is zero
-        if (operands[0].size() == 1 && operands[0][0] == 0)
+        if (operands[0].digits.size() == 1 && operands[0].digits[0] == 0)
         {
             return { 0 };
         }
-        if (operands[1].size() == 1 && operands[1][0] == 0)
+        if (operands[1].digits.size() == 1 && operands[1].digits[0] == 0)
         {
             return { 0 };
         }
 
-        const std::vector<int>& multiplicand = operands[0];
-        const std::vector<int>& multiplier = operands[1];
+        const BigNumber& multiplicand = operands[0];
+        const BigNumber& multiplier = operands[1];
 
-        std::vector<int> product(multiplicand.size() + multiplier.size(), 0);
-        for (int i = 0; i < multiplicand.size(); i++)
+        std::vector<int> product(multiplicand.digits.size() + multiplier.digits.size(), 0);
+        for (int i = 0; i < multiplicand.digits.size(); i++)
         {
             int carry = 0;
-            for (int j = 0; j < multiplier.size() || carry > 0; j++)
+            for (int j = 0; j < multiplier.digits.size() || carry > 0; j++)
             {
-                const int digit = j < multiplier.size() ? multiplier[j] : 0;
-                const int sum = product[i + j] + multiplicand[i] * digit + carry;
+                const int digit = j < multiplier.digits.size() ? multiplier.digits[j] : 0;
+                const int sum = product[i + j] + multiplicand.digits[i] * digit + carry;
                 product[i + j] = sum % 10;
                 carry = sum / 10;
             }
@@ -57,3 +64,5 @@ public:
         return std::make_unique<Multiplication>(*this);
     }
 };
+
+#endif // !MULTIPLICATION_H

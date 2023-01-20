@@ -1,11 +1,12 @@
 //Daren Shamoun
-//ID# 5550016094
-#include "big_number_calculator.h"
+#include "bignumbercalculator.h"
 #include "options.h"
+
 #include <iostream>
 #include <map>
 #include <string>
 #include <vector>
+
 
 int main(int argc, char* argv[])
 {
@@ -39,14 +40,12 @@ int main(int argc, char* argv[])
         {
             continue;
         }
-        else
-        {
-            // Calculate the result of the expression
-            calculator.Calculate(line);
 
-            // Output the result
-            std::cout << line << " = " << calculator << std::endl;
-        }
+        // Calculate the result of the expression
+        calculator.Calculate(line);
+
+        // Output the result
+        std::cout << line << " = " << calculator << std::endl;
     }
     return 0;
 }

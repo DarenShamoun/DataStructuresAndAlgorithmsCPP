@@ -1,14 +1,13 @@
 //Daren Shamoun
-//ID# 5550016094
-#ifndef CISC187_MESA_BIG_NUMBER_CALCULATOR_H
-#define CISC187_MESA_BIG_NUMBER_CALCULATOR_H
+#ifndef BIG_NUMBER_CALCULATOR_H
+#define BIG_NUMBER_CALCULATOR_H
 
 #include "operation.h"
-#include "addition.cpp"
-#include "subtraction.cpp"
-#include "multiplication.cpp"
-#include "division.cpp"
-#include "exponentiation.cpp"
+#include "addition.h"
+#include "subtraction.h"
+#include "multiplication.h"
+#include "division.h"
+#include "exponentiation.h"
 
 #include <algorithm>
 #include <iostream>
@@ -20,16 +19,53 @@
 #include <sstream>
 #include <functional>
 #include <unordered_set>
+#include <memory>
+#include <stdexcept>
+#include <cstdlib>
 
-std::unique_ptr<Operation> static CreateOperation(const std::string& token);
-std::vector<int> static ToBigNumber(const std::string& number);
-std::unique_ptr<Operation> static CloneOperation(const std::unique_ptr<Operation>& operation);
+
+//creates a operation object and registers the operations
+std::unique_ptr<Operation> static CreateOperation(const std::string& token)
+{
+    static const std::unordered_map<std::string, std::function<std::unique_ptr<Operation>()>> factory =
+    {
+        { "+", []() { return std::make_unique<Addition>(); } },
+        { "-", []() { return std::make_unique<Subtraction>(); } },
+        { "*", []() { return std::make_unique<Multiplication>(); } },
+        { "/", []() { return std::make_unique<Division>(); } },
+        { "^", []() { return std::make_unique<Exponent>(); } },
+    };
+
+    auto it = factory.find(token);
+    if (it == factory.end())
+    {
+        throw std::invalid_argument("Invalid operator");
+    }
+    return it->second();
+}
+
+//converts a string to a vector of ints
+BigNumber static ToBigNumber(const std::string& number)
+{
+    std::vector<int> big_number;
+    for (const char& digit : number)
+    {
+        big_number.push_back(digit - '0');
+    }
+    return big_number;
+}
+
+// Helper function to create a deep copy of an `Operation` object
+std::unique_ptr<Operation> static CloneOperation(const std::unique_ptr<Operation>& operation)
+{
+    return std::unique_ptr<Operation>(operation->Clone());
+}
 
 //the actual calculator
 class BigNumberCalculator
 {
 private:
-    std::vector<int> m_result;
+    BigNumber m_result;
 
     std::map<std::string, std::unique_ptr<Operation>> operations_;
 
@@ -52,7 +88,7 @@ private:
 public:
     BigNumberCalculator() = default;
 
-    std::vector<int> GetResult() const
+    BigNumber GetResult() const
     {
         return m_result;
     }
@@ -63,25 +99,25 @@ public:
         operations_[symbol] = std::move(operation);
     }
 
-    std::vector<int> static ParseBigNumber(const std::string& number)
+    BigNumber static ParseBigNumber(const std::string& number)
     {
-        std::vector<int> bigNumber;
+        BigNumber bigNumber;
         for (const char ch : number)
         {
             if (!bool(isdigit(ch)))
             {
                 throw std::invalid_argument("Invalid number");
             }
-            bigNumber.push_back(ch - '0');
+            bigNumber.digits.push_back(ch - '0');
         }
-        std::reverse(bigNumber.begin(), bigNumber.end());
+        std::reverse(bigNumber.digits.begin(), bigNumber.digits.end());
         return bigNumber;
     }
     
     // Calculate the result of the given expression
     void Calculate(const std::string& expression)
     {
-        std::vector<int> operands;
+        std::stack<BigNumber> operands;
         std::stack<std::unique_ptr<Operation>> operations;
 
         std::stringstream ss(expression);
@@ -94,17 +130,17 @@ public:
 
                 // Pop the required number of operands from the operands stack
                 const size_t operandCount = operation->GetOperandCount();
-                std::vector<int> operationOperands;
+                std::vector<BigNumber> operationOperands;
                 operationOperands.reserve(operandCount);
                 for (size_t i = 0; i < operandCount; i++)
                 {
-                    operationOperands.insert(operationOperands.end(), operands.end() - operandCount, operands.end());
-                    operands.erase(operands.end() - operandCount, operands.end());
+                    operationOperands.push_back(operands.top());
+                    operands.pop();
                 }
 
                 // Perform the operation and push the result onto the operands stack
-                const std::vector<int> result = operation->handle(operationOperands);
-                operands = std::move(result);
+                const BigNumber result = operation->handle(operationOperands);
+                operands.push(result);
 
                 // Push the operation onto the operations stack
                 operations.push(std::move(operation));
@@ -112,17 +148,18 @@ public:
             else
             {
                 // Parse the token as a big number and push it onto the operands stack
-                operands.insert(operands.end(), ParseBigNumber(token).begin(), ParseBigNumber(token).end());
+                operands.push(ParseBigNumber(token));
             }
         }
 
         // The result should be the only operand left on the stack
-        if (operands.empty())
+        if (operands.size() != 1)
         {
             throw std::invalid_argument("Invalid expression");
         }
-        m_result = std::move(operands);
+        m_result = operands.top();
     }
+
   
     static bool IsOperand(const std::string& token)
     {
@@ -132,28 +169,28 @@ public:
     std::string ToString() const
     {
         std::stringstream ss;
-        for (auto i = m_result.size() - 1; i >= 0; i--)
+        for (auto i = m_result.digits.size() - 1; i >= 0; i--)
         {
-            ss << m_result[i];
+            ss << m_result.digits[i];
         }
         return ss.str();
     }
 
-    std::vector<int> EvaluatePostfix(const std::vector<std::string>& postfix)
+    BigNumber EvaluatePostfix(const std::vector<std::string>& postfix)
     {
-        std::stack<std::vector<int>> operand_stack;
+        std::stack<BigNumber> operand_stack;
         for (const std::string& token : postfix)
         {
             if (IsOperator(token))
             {
                 auto operand_count = GetOperandCount(token);
-                std::vector<std::vector<int>> operands;
+                std::vector<BigNumber> operands;
                 while (operand_count-- > 0)
                 {
                     operands.push_back(operand_stack.top());
                     operand_stack.pop();
                 }
-                const std::vector<int> result = GetOperation(token)->handle(operands);
+                const BigNumber result = GetOperation(token)->handle(operands);
                 operand_stack.push(result);
             }
             else
@@ -177,7 +214,7 @@ public:
     }
     
     // Move constructor
-    BigNumberCalculator(BigNumberCalculator&& other) noexcept
+    BigNumberCalculator(BigNumberCalculator&& other)
         : operations_(std::move(other.operations_))
     {
         // The other object's operations map has been moved to this object, so clear it in the other object
